@@ -1,0 +1,11 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYMENT_SOURCE=$PWD
+    - export DEPLOYMENT_TARGET=/home1/resumema/repositories/cvrevamp
+    - /bin/cp -R $DEPLOYMENT_SOURCE/* $DEPLOYMENT_TARGET
+    - cd $DEPLOYMENT_TARGET
+    - npm install --production
+    - npm run build
+    - rm -rf $DEPLOYMENT_TARGET/*
+    - mv build/* $DEPLOYMENT_TARGET/
