@@ -1,0 +1,46 @@
+
+
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.template-card{
+  height: 400px;
+}
+
+
+.adminDashboardcards:hover{
+  background-color: #dad9d9;
+  cursor: pointer;
+  
+}
+
+.achievments{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 40px 0;
+}
+
+.achievments .div {
+  text-align: center;
+  justify-content: center;
+  width: 34%;
+  display: flex;
+}
+
+.totalOrder, .completedOrders, .cancelledOrders{
+  width: 60px;
+  height: 60px;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 800;
+  border-radius: 100%;
+  border-bottom: 7px solid green;
+  border-left: 7px solid green;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
