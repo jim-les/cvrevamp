@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Card, Box, Typography, Button, Grid, Input, TextField, CardMedia } from '@mui/material';
+import { Card, Box, Typography, Button, Grid, Input, TextField, CardMedia, MenuItem } from '@mui/material';
 import styled, { keyframes, css } from 'styled-components';
 import { Close } from '@mui/icons-material';
 import createCv from '../../assets/createCV.png';
@@ -112,7 +112,10 @@ const ResumeCard = ({ setStage }) => {
     const [selectedTemplate, setSelectedTemplate] = useState(0);
     const [clientDescription, setClientDescription] = useState('');
     const [templates, setTemplates] = useState([]);
-
+    const [yearsOfExperience, setYearsOfExperience] = useState(0);
+    const [agency, setAgency] = useState('');
+    // ugent, Normal , extreamly urgent
+    const agencies = ['Urgent', 'Normal', 'Extremely Urgent'];
     const handleCreateNew = () => {
         console.log('Create New Resume');
         setStage('Create Cv');
@@ -270,7 +273,7 @@ const ResumeCard = ({ setStage }) => {
                             <Box display="flex" gap={2} overflow="auto" height="100%">
                                 {templates.map((template, index) => (
                                     <Box key={template._id} m={1} position="relative">
-                                        <Typography variant="body1">{template._id}</Typography>
+                                        {/* <Typography variant="body1">{template._id}</Typography> */}
                                         <Card
                                             // sx={{ width: 280, height: 400 }}
                                             sx={{
@@ -293,6 +296,36 @@ const ResumeCard = ({ setStage }) => {
                             </Box>
                         </Grid>
                     </Grid>
+
+                    {/* add years of exprience select input */}
+                    <Box mt={2}>
+                        <TextField
+                            label="Years of Experience"
+                            type="number"
+                            fullWidth
+                            variant="outlined"
+                            value={yearsOfExperience}
+                            onChange={(e) => setYearsOfExperience(e.target.value)}
+                        />
+                    </Box>
+
+                    {/* {/* state of agency selection drop dwon */}
+                    <Box mt={2}>
+                        <TextField
+                            label="Select Agency"
+                            select
+                            fullWidth
+                            variant="outlined"
+                            value={agency}
+                            onChange={(e) => setAgency(e.target.value)}
+                        >
+                            {agencies.map((agency) => (
+                                <MenuItem key={agency} value={agency}>
+                                    {agency}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Box>
 
                     <Box mt={2}>
                         <TextField
@@ -321,6 +354,9 @@ const ResumeCard = ({ setStage }) => {
                     </Box>
                 </Box>
             )}
+
+            {/* spacing box */}
+            <Box flex={1} sx={{ height: '100px' }} />
         </Box>
     );
 };

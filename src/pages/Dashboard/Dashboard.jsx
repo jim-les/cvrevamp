@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import Auth from '../../Auth/Auth';
 import axios from 'axios';
 import { Close } from '@mui/icons-material';
+import docsImage from '../../assets/docs.png';
 
 // Component imports
 import Wrapper from '../../components/common/Wrapper';
@@ -14,6 +15,30 @@ import template2 from "../../assets/carousel/coverletter1.svg";
 import template3 from "../../assets/carousel/carousel3.webp";
 import { BASE_URL } from '../../BASE_URL';
 import { useAppContext } from '../../useAppContext';
+import {
+    Add, DownloadForOffline, StarOutlineSharp, Person2Outlined, CalendarMonth, FileCopy
+} from '@mui/icons-material';
+
+const StyledCard = styled('div')`
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.3s ease;
+    cursor: pointer;
+    border-radius: 8px;
+    background-color: transparent;
+    position: relative;
+    &:hover {
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+`;
+
+// Status colors for document status
+const statusColors = {
+    pending: 'orange',
+    completed: 'green',
+    rejected: 'red',
+};
 
 const Dashboard = () => {
     const [selectedTab, setSelectedTab] = useState('all');
@@ -145,21 +170,30 @@ const Dashboard = () => {
                                             {filteredOrders.map((order, index) => (
                                                 <Grid item md={4} key={index}>
                                                     <StyledCard variant="outlined">
+                                                        <img src={docsImage} alt="document" width={'100%'} height={180} />
                                                         <Box display='flex' alignItems='center'>
-                                                            {getDocumentIcon(order.documentType)}
-                                                            <Typography variant="h6" fontWeight="bold" fontSize={14} style={{ marginLeft: '8px' }}>
+                                                            <Typography variant="h6" fontWeight="bold" fontSize={14} display={'flex'} justifyContent={'space-between'} alignContent={'center'} width={'100%'}>
                                                                 {extractOrderName(order.documentUrl)}
+                                                                <a href={order.documentUrl} download style={{ color: 'black', textDecoration: 'none' }}>
+                                                                    <DownloadForOffline style={{ color: 'blue', marginLeft: '8px' }}/>
+                                                                </a>
                                                             </Typography>
                                                         </Box>
-                                                        <Typography variant="body2">Type: {order.documentType}</Typography>
-                                                        <Typography
-                                                            variant="body2"
-                                                            style={{ color: statusColors[order.orderStatus] || 'black' }}
-                                                        >
-                                                            Status: {order.orderStatus}
+                                                        <Typography variant="body2" display='flex' gap={1} justifyContent='space-between' alignItems={'center'}>
+                                                            {order.documentType}
+                                                            <span style={{fontSize: '8px'}}>
+                                                                {order.uploadDate}
+                                                            </span>
                                                         </Typography>
-                                                        <Typography variant="body2" fontSize={12}><b>Date:</b> {order.uploadDate}</Typography>
-                                                        <Button variant='outlined' color='primary'> View</Button>
+                                                        <Typography display='flex' gap={1} alignItems='center'
+                                                            variant="body2"
+                                                            style={{ color: statusColors[order.orderStatus] || 'black', position: 'absolute', right: 10, top: 10, width: '95%', display: 'flex', justifyContent: 'flex-end' }}
+                                                        >
+                                                            {/* <StarOutlineSharp style={{ color: 'blue' }} /> */}
+                                                            <span>
+                                                                <b>Status:</b> {order.orderStatus}
+                                                            </span>
+                                                        </Typography>
                                                     </StyledCard>
                                                 </Grid>
                                             ))}
@@ -263,18 +297,5 @@ const Dashboard = () => {
         </Wrapper>
     );
 };
-
-const StyledCard = styled(Card)`
-    padding: 16px;
-    width: 100%;
-    height: 150px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
-    cursor: pointer;
-
-    &:hover {
-        background-color: #f5f5f5;
-    }
-`;
 
 export default Dashboard;
