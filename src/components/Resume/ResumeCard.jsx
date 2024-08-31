@@ -6,104 +6,11 @@ import createCv from '../../assets/createCV.png';
 import { AddCard, UploadFile } from '@mui/icons-material';
 import axios from 'axios'; // Ensure axios is imported
 import { BASE_URL } from '../../BASE_URL'; // Ensure BASE_URL is imported
-
-// Keyframes for fade-in and fade-out animation
-const fadeInOut = keyframes`
-  0% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
-
-// Keyframes for glowing animation
-const glow = keyframes`
-  0% {
-    box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 15px rgba(0, 0, 255, 0.8);
-  }
-  100% {
-    box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
-  }
-`;
-
-// Styled Card component with animation
-const AnimatedCard = styled(Card)`
-    flex: 1;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 200px;
-    z-index: 1000;
-    animation: ${fadeInOut} 0.5s ease-in-out;
-`;
-
-// Styled Exit Button
-const ExitButton = styled(Button)`
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 1100; /* Ensure it appears above the card */
-    background-color: transparent;
-    color: #000; /* Optional: Adjust color for better visibility */
-`;
-
-// Styled Box for actions
-const ActionBox = styled(Box)`
-    flex: 1;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 20px;
-    cursor: pointer;
-    text-align: center;
-    transition: background-color 0.3s, color 0.3s;
-
-    ${({ glowing }) =>
-        glowing &&
-        css`
-            &:hover {
-                background-color: blue;
-                color: white;
-                animation: ${glow} 1.5s infinite;
-            }
-        `}
-
-    &:hover {
-        background-color: blue;
-        color: white;
-    }
-`;
-
-// Styled Box for dashed outline
-const DashedOutline = styled(Box)`
-    border: 2px dashed green; /* Updated border color */
-    border-radius: 5px;
-    padding: 20px;
-    display: flex;
-    height: 350px;
-    margin-top: 20px;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-    text-align: center; /* Center text and emoji */
-    
-    &::before {
-        content: '👍'; /* Thumbs up emoji */
-        font-size: 50px; /* Adjust size as needed */
-        margin-bottom: 10px;
-    }
-`;
+import { AnimatedCard, ExitButton, ActionBox, DashedOutline } from './style';
+import PreloadedActivityIndicator from '../PreloadedActivityIndicator';
+import SuccessConfetti from '../SuccessConfetti';
+import PaymentModal from '../PaymentModal'; // Import the PaymentModal component
+import MpesaPreloader from '../MpesaPreloader';
 
 const ResumeCard = ({ setStage }) => {
     const cardRef = useRef(null);
@@ -112,8 +19,25 @@ const ResumeCard = ({ setStage }) => {
     const [selectedTemplate, setSelectedTemplate] = useState(0);
     const [clientDescription, setClientDescription] = useState('');
     const [templates, setTemplates] = useState([]);
-    const [yearsOfExperience, setYearsOfExperience] = useState(0);
+    const [yearsOfExperience, setYearsOfExperience] = useState(1);
     const [agency, setAgency] = useState('');
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [mpesaloading, setMpesaLoading] = useState(false);
+    const [paymentOpen, setPaymentOpen] = useState(false); // State to manage payment modal visibility
+    const [amountToPay, setAmountToPay] = useState(0); // State to store the amount to be paid
+
+    const calculateAmount = () => {
+        // Example calculation logic
+        let baseAmount = 1000; // Base amount for simplicity
+        if (agency === 'Urgent') {
+            baseAmount += 500;
+        } else if (agency === 'Extremely Urgent') {
+            baseAmount += 1000;
+        }
+        setAmountToPay(baseAmount + yearsOfExperience * 200); // Adjust this formula as needed
+    };
+    
     // ugent, Normal , extreamly urgent
     const agencies = ['Urgent', 'Normal', 'Extremely Urgent'];
     const handleCreateNew = () => {
@@ -141,38 +65,70 @@ const ResumeCard = ({ setStage }) => {
         setClientDescription(event.target.value);
     };
 
-    const [loading, setLoading] = useState(false);
+    const handleSuccess = () => {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 10000); // Hide confetti after 3 seconds
+    };
 
     const handleUploadFile = async () => {
         if (file && selectedTemplate && clientDescription) {
-            setLoading(true);
+            
             const formData = new FormData();
             formData.append('document', file);
             formData.append('documentType', 'resume');
             formData.append('template', selectedTemplate);
             formData.append('description', clientDescription);
+            console.log(`urgency: ${agency}, amountToPay: ${amountToPay}`)
+            setLoading(true);
+            calculateAmount(); // Calculate the amount to be paid before showing the payment modal
+            setPaymentOpen(true); // Open the payment modal
+            setLoading(false);
 
-            console.log('Uploading file:', formData);
-
-            try {
-                const response = await axios.post(`${BASE_URL}/api/orders`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                    },
-                });
-                console.log('Order created:', response.data);
-                alert('Your order has been placed successfully!');
-            } catch (error) {
-                console.error('Error creating order:', error);
-                alert('There was an error placing your order. Please try again.');
-            } finally {
-                setLoading(false);
-                setView('options');
-            }
+            // try {
+            //     const response = await axios.post(`${BASE_URL}/api/orders`, formData, {
+            //         headers: {
+            //             'Content-Type': 'multipart/form-data',
+            //             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            //         },
+            //     });
+            //     console.log('Order created:', response.data);
+            //     handleSuccess();
+            //     alert('Your order has been placed successfully!');
+            // } catch (error) {
+            //     console.error('Error creating order:', error);
+            //     alert('There was an error placing your order. Please try again.');
+            // } finally {
+            //     setLoading(false);
+            //     setView('options');
+            // }
         } else {
             console.log('Please complete all fields');
             alert('Please select a file, a template, and provide a description.');
+        }
+    };
+
+
+    const handleConfirmPayment = async (phoneNumber) => {
+        console.log('Payment confirmed for phone number:', phoneNumber);
+        setMpesaLoading(true)
+        try {
+            await axios.post(`${BASE_URL}/api/payments`, {
+                amount: amountToPay,
+                phoneNumber,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                },
+            });
+            handleSuccess();
+            alert('Payment successful! Your order has been placed.');
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            alert('There was an error processing your payment. Please try again.');
+        } finally {
+            setPaymentOpen(false);
+            setMpesaLoading(false)
+            // setView('options');
         }
     };
 
@@ -210,10 +166,16 @@ const ResumeCard = ({ setStage }) => {
 
     return (
         <Box p={3} position="relative" height="100vh">
-            {/* Exit icon */}
-            {/* <ExitButton variant='text' onClick={() => setStage('')}>
-                <Close />
-            </ExitButton> */}
+            {loading && <PreloadedActivityIndicator visible={loading} />}
+            {mpesaloading && <MpesaPreloader visible={mpesaloading} />}
+            {showConfetti && <SuccessConfetti width={window.innerWidth} height={window.innerHeight} />}
+            <PaymentModal
+                open={paymentOpen}
+                onClose={() => setPaymentOpen(false)}
+                onConfirm={handleConfirmPayment}
+                amount={amountToPay}
+            />
+
 
             {view === 'options' ? (
                 <Grid container spacing={3} style={{ height: '100%' }}>
@@ -244,7 +206,19 @@ const ResumeCard = ({ setStage }) => {
                             </Box>
                         </AnimatedCard>
                     </Grid>
-                    <Grid item md={4} xs={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Grid item md={4} xs={12} style={{ alignItems: 'center', justifyContent: 'center' }}>
+                        <Card sx={{ p: 2 }}>
+                            <Typography variant='h6'>How It Works</Typography>
+                            <Typography variant='body2' mt={1}>
+                                1. Choose to create a new CV or upload an existing one.
+                            </Typography>
+                            <Typography variant='body2'>
+                                2. If uploading, select a template and provide a description.
+                            </Typography>
+                            <Typography variant='body2'>
+                                3. Confirm and pay to receive your customized CV.
+                            </Typography>
+                        </Card>
                         <img src={createCv} alt='Create CV illustration' style={{ width: '100%', height: 'auto', maxWidth: '500px' }} />
                     </Grid>
                 </Grid>
@@ -341,8 +315,9 @@ const ResumeCard = ({ setStage }) => {
                             color="primary"
                             onClick={handleUploadFile}
                             style={{ marginTop: '20px' }}
+                            mb={5}
                         >
-                           Place Resume Order
+                            Upload and Pay
                         </Button>
                         <Button
                             variant="text"
@@ -352,6 +327,7 @@ const ResumeCard = ({ setStage }) => {
                             Cancel
                         </Button>
                     </Box>
+                    <Box mt={5}/>
                 </Box>
             )}
 

@@ -1,0 +1,16 @@
+@keyframes hoverEffect {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+  
+.hoverEffect {
+    border-radius: 30px;
+    animation: hoverEffect 3s ease-in-out infinite;
+    transition: box-shadow 0.3s ease-in-out;
+}
+  
+.hoverEffect {
+    box-shadow: 0px 10px 30px rgba(0, 255, 255, 0.5);
+}
+  
